@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#172554">
+<title>知識試煉所</title>
+<link rel="manifest" href="manifest.json">
+<style>
+:root{--navy:#172554;--blue:#2563eb;--pale:#eff6ff;--ink:#172033;--muted:#64748b;--line:#dbe3ef;--good:#15803d;--bad:#b91c1c}
+*{box-sizing:border-box}body{margin:0;background:#f4f7fb;color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif}
+header{background:linear-gradient(135deg,#172554,#1d4ed8);color:white;padding:24px 18px 22px;border-radius:0 0 24px 24px}
+header h1{font-size:25px;margin:0 0 6px}header p{margin:0;color:#dbeafe;font-size:14px}
+main{max-width:760px;margin:auto;padding:16px 14px 38px}.card{background:white;border:1px solid #e5eaf2;border-radius:18px;padding:17px;margin:0 0 14px;box-shadow:0 5px 18px #0f172a08}
+h2{font-size:17px;margin:0 0 13px}label{display:block;font-size:13px;font-weight:700;margin:12px 0 6px;color:#334155}
+input,select,textarea{width:100%;font:inherit;border:1px solid #cbd5e1;border-radius:11px;padding:11px 12px;background:white;color:var(--ink)}textarea{min-height:94px;resize:vertical}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.btn{border:0;border-radius:12px;padding:12px 14px;font:inherit;font-weight:750;cursor:pointer}.primary{background:var(--blue);color:white;width:100%;margin-top:14px}.secondary{background:var(--pale);color:#1d4ed8}.quiet{background:#f1f5f9;color:#334155}.small{font-size:12px;color:var(--muted);line-height:1.55}.status{margin-top:10px;font-size:13px;color:var(--muted);white-space:pre-wrap}.hidden{display:none!important}.pill{display:inline-block;padding:4px 9px;border-radius:99px;background:#eff6ff;color:#1d4ed8;font-size:12px;font-weight:700}
+.qtop{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}.qtext{font-size:18px;font-weight:750;line-height:1.6;margin:10px 0 16px}.option{display:block;width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:12px;padding:12px;margin:8px 0;font:inherit;cursor:pointer}.option.selected{border-color:var(--blue);background:var(--pale)}.option.correct{border-color:#86efac;background:#f0fdf4}.option.wrong{border-color:#fca5a5;background:#fef2f2}.feedback{padding:12px;border-radius:12px;background:#f8fafc;line-height:1.6;font-size:14px;margin-top:12px}.feedback.good{background:#f0fdf4}.feedback.bad{background:#fef2f2}.actions{display:flex;gap:8px;margin-top:12px}.actions button{flex:1}.statgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{background:#f8fafc;border-radius:12px;padding:12px}.stat strong{display:block;font-size:22px}.stat span{font-size:12px;color:var(--muted)}.historyitem{border-top:1px solid #edf2f7;padding:10px 0;font-size:14px;line-height:1.5}.historyitem:first-child{border-top:0}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:8px 16px 24px}
+@media(max-width:440px){.row{grid-template-columns:1fr}.qtext{font-size:17px}.card{padding:14px}}
+</style>
+</head>
+<body>
+<header><h1>知識試煉所</h1><p>把好奇心變成可檢驗的知識。個人學習・錯題複習・難度自訂</p></header>
+<main>
+<section class="card" id="setup">
+<h2>🎯 建立一場挑戰</h2>
+<label for="topic">出題主題</label><input id="topic" placeholder="例如：秦漢政治制度、三角函數、英文文法">
+<div class="row">
+<div><label for="subject">學習領域</label><select id="subject"><option>不限／綜合知識</option><option>學校課業</option><option>歷史</option><option>政治與社會</option><option>哲學與邏輯</option><option>自然科學</option><option>國文與文學</option><option>英文</option><option>數學</option><option>藝術與美學</option></select></div>
+<div><label for="difficulty">難度</label><select id="difficulty"><option>入門</option><option selected>普通</option><option>中等偏難</option><option>困難</option><option>專家挑戰</option></select></div>
+</div>
+<div class="row">
+<div><label for="count">題目數量</label><select id="count"><option>5</option><option selected>10</option><option>15</option><option>20</option></select></div>
+<div><label for="types">題型組合</label><select id="types"><option value="mix" selected>選擇題為主＋問答／填充</option><option value="mcq">全部選擇題</option><option value="written">選擇題＋問答題</option></select></div>
+</div>
+<label for="source">指定資料（選填）</label><textarea id="source" placeholder="貼上課本、筆記或文章；若填寫，AI 會優先依據這份資料出題。"></textarea>
+<p class="small">預設以選擇題為主，不會出是非題。若選擇混合題型，少數題目會要求自行輸入答案。</p>
+<button class="btn primary" id="generate">✨ 生成題目</button>
+<div class="status" id="setupStatus">首次使用請先在「設定」填入 AI API Key。題目與紀錄會保存在這台裝置的瀏覽器中。</div>
+</section>
+
+<section class="card hidden" id="quiz">
+<div class="qtop"><span class="pill" id="qtype">選擇題</span><span class="small" id="progress">第 1 / 10 題</span></div>
+<div style="height:6px;background:#e2e8f0;border-radius:99px;overflow:hidden"><div id="bar" style="height:100%;width:0;background:#2563eb"></div></div>
+<div class="qtext" id="question"></div>
+<div id="answerArea"></div>
+<div class="feedback hidden" id="feedback"></div>
+<div class="actions"><button class="btn quiet" id="quit">結束本次</button><button class="btn primary" id="check">確認答案</button><button class="btn primary hidden" id="next">下一題 →</button></div>
+</section>
+
+<section class="card" id="stats">
+<h2>📈 我的學習紀錄</h2>
+<div class="statgrid"><div class="stat"><strong id="sessions">0</strong><span>完成挑戰</span></div><div class="stat"><strong id="attempted">0</strong><span>已作答題數</span></div><div class="stat"><strong id="accuracy">—</strong><span>整體正確率</span></div></div>
+<div class="actions"><button class="btn secondary" id="review">🔁 複習錯題</button><button class="btn quiet" id="clearHistory">清除紀錄</button></div>
+<div id="history" class="small" style="margin-top:12px">尚無作答紀錄。</div>
+</section>
+
+<section class="card" id="settings">
+<h2>⚙️ 設定</h2>
+<p class="small">AI 出題需要模型服務。此版本支援 Google Gemini API；請使用你有權使用的帳戶與服務，並自行確認其免費額度、年齡及使用條款。API Key 只儲存在本機瀏覽器，不會傳給本 App 的自有伺服器；但會傳送給你選用的 AI 服務。</p>
+<label for="apiKey">Gemini API Key</label><input id="apiKey" type="password" autocomplete="off" placeholder="貼上 API Key">
+<div class="actions"><button class="btn secondary" id="saveKey">儲存設定</button><button class="btn quiet" id="toggleKey">顯示／隱藏</button></div>
+<label for="model">模型名稱</label><input id="model" value="gemini-2.5-flash">
+<p class="small">如果模型名稱不可用，可在此更換為帳戶目前可使用的模型。不要把 Key 分享給別人。</p>
+</section>
+</main>
+<footer>知識試煉所 · 個人學習版 · 資料僅儲存在本機瀏覽器</footer>
+<script>
+const $=id=>document.getElementById(id);
+let questions=[], index=0, answered=false, sessionCorrect=0, sessionAttempted=0, reviewMode=false;
+const STORE='knowledge_trial_v1';
+function getData(){try{return JSON.parse(localStorage.getItem(STORE)||'{"history":[],"wrong":[]}')}catch(e){return {history:[],wrong:[]}}}
+function putData(d){localStorage.setItem(STORE,JSON.stringify(d));renderStats()}
+function loadSettings(){ $('apiKey').value=localStorage.getItem('kt_api_key')||''; $('model').value=localStorage.getItem('kt_model')||'gemini-2.5-flash'; }
+$('saveKey').onclick=()=>{localStorage.setItem('kt_api_key',$('apiKey').value.trim());localStorage.setItem('kt_model',$('model').value.trim()||'gemini-2.5-flash');$('setupStatus').textContent='設定已儲存於本機。';};
+$('toggleKey').onclick=()=>{$('apiKey').type=$('apiKey').type==='password'?'text':'password'};
+function promptText(){const topic=$('topic').value.trim()||$('subject').value;const count=+$('count').value;const type=$('types').value;const src=$('source').value.trim();return `你是一位嚴謹的教學設計者。請用繁體中文出一份測驗，主題：「${topic}」，學習領域：「${$('subject').value}」，難度：「${$('difficulty').value}」，共 ${count} 題。題型要求：${type==='mcq'?'全部為單選題。':type==='written'?'約 80% 單選題，其餘為簡答題。':'約 80% 單選題，其餘可為簡答或填充題。'}禁止是非題。選擇題必須有 4 個選項，且只有一個最佳答案。題目要有明確正解，避免含糊。難度要真正符合設定，不能只靠死背。每題附簡潔但有用的解釋。${src?'優先依據以下資料出題，不要加入資料無法支持的細節；若資料不足，可出合理的概念題。\\n指定資料：\\n'+src:''}\n只回傳合法 JSON，不要 Markdown，格式如下：{"questions":[{"type":"mcq","question":"題目","options":["A...","B...","C...","D..."],"answer":0,"explanation":"解析"},{"type":"short","question":"題目","answerText":"參考答案","explanation":"評分重點與解析"}]}\n單選題 answer 是 0 到 3 的整數。題目總數必須剛好 ${count} 題。`;}
+async function generate(){
+ const key=($('apiKey').value||localStorage.getItem('kt_api_key')||'').trim();
+ if(!key){$('setupStatus').textContent='請先在下方「設定」輸入並儲存 Gemini API Key。';$('settings').scrollIntoView({behavior:'smooth'});return}
+ $('generate').disabled=true;$('generate').textContent='正在生成…';$('setupStatus').textContent='AI 正在設計題目，請稍候。';
+ try{
+  const model=($('model').value||localStorage.getItem('kt_model')||'gemini-2.5-flash').trim();
+  const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:promptText()}]}],generationConfig:{responseMimeType:'application/json',temperature:0.7}})});
+  const raw=await res.json();if(!res.ok)throw new Error(raw.error?.message||`API 錯誤 (${res.status})`);
+  let txt=raw.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('')||'';txt=txt.replace(/^```json\s*/i,'').replace(/```$/,'').trim();
+  const parsed=JSON.parse(txt);questions=(parsed.questions||[]).filter(q=>q.question&&(q.type==='mcq'?Array.isArray(q.options)&&q.options.length>=2:!!q.answerText));
+  if(!questions.length)throw new Error('AI 回傳格式不正確，請再試一次。');
+  index=0;answered=false;sessionCorrect=0;sessionAttempted=0;reviewMode=false;
+  $('setup').classList.add('hidden');$('stats').classList.add('hidden');$('settings').classList.add('hidden');$('quiz').classList.remove('hidden');renderQuestion();
+  $('setupStatus').textContent='';
+ }catch(e){$('setupStatus').textContent='生成失敗：'+e.message+'\n請確認網路、API Key、模型名稱與服務額度。'}
+ finally{$('generate').disabled=false;$('generate').textContent='✨ 生成題目'}
+}
+$('generate').onclick=generate;
+function renderQuestion(){
+ const q=questions[index];answered=false;$('feedback').classList.add('hidden');$('check').classList.remove('hidden');$('next').classList.add('hidden');
+ $('qtype').textContent=q.type==='mcq'?'單選題':q.type==='short'?'簡答題':'填充題';$('progress').textContent=`第 ${index+1} / ${questions.length} 題`; $('bar').style.width=`${index/questions.length*100}%`;$('question').textContent=q.question;
+ const area=$('answerArea');area.innerHTML='';
+ if(q.type==='mcq'){q.options.forEach((opt,i)=>{const b=document.createElement('button');b.className='option';b.textContent=String.fromCharCode(65+i)+'. '+opt;b.dataset.index=i;b.onclick=()=>{if(answered)return;area.querySelectorAll('.option').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');};area.appendChild(b)})}
+ else{const ta=document.createElement('textarea');ta.id='writtenAnswer';ta.placeholder='輸入你的答案…';area.appendChild(ta)}
+ $('check').disabled=false;
+}
+async function checkAnswer(){
+ if(answered)return;const q=questions[index];let userAnswer,correct=false,feedback='';
+ if(q.type==='mcq'){const selected=$('answerArea').querySelector('.option.selected');if(!selected){$('feedback').textContent='請先選擇一個答案。';$('feedback').classList.remove('hidden');return}userAnswer=+selected.dataset.index;correct=userAnswer===+q.answer;const opts=$('answerArea').querySelectorAll('.option');opts.forEach((b,i)=>{b.disabled=true;if(i===+q.answer)b.classList.add('correct');if(i===userAnswer&&!correct)b.classList.add('wrong')});feedback=`${correct?'答對了！':'這題答錯了。'} 正確答案：${String.fromCharCode(65+(+q.answer))}. ${q.options[+q.answer]}\n\n${q.explanation||''}`}
+ else{userAnswer=$('writtenAnswer').value.trim();if(!userAnswer){$('feedback').textContent='請先輸入答案。';$('feedback').classList.remove('hidden');return} $('check').disabled=true;feedback='參考答案：'+q.answerText+'\n\n'+(q.explanation||'')+'\n\n簡答題由你自行比對參考答案；此版本不會自動判分。';correct=null}
+ answered=true;sessionAttempted++;if(correct)sessionCorrect++;
+ $('feedback').textContent=feedback;$('feedback').classList.remove('hidden');$('feedback').className='feedback '+(correct===true?'good':correct===false?'bad':'');$('check').classList.add('hidden');$('next').classList.remove('hidden');
+ const d=getData();d.history.push({date:new Date().toISOString(),topic:$('topic').value.trim()||$('subject').value,correct:correct,question:q.question,userAnswer:userAnswer,answer:q.type==='mcq'?q.options[+q.answer]:q.answerText,explanation:q.explanation||'',type:q.type});if(correct===false)d.wrong.push({question:q.question,options:q.options||[],answer:q.answer,answerText:q.answerText,explanation:q.explanation||'',type:q.type,topic:$('topic').value.trim()||$('subject').value});putData(d);
+}
+$('check').onclick=checkAnswer;
+$('next').onclick=()=>{if(index<questions.length-1){index++;renderQuestion()}else finishSession()};
+function finishSession(){const pct=sessionAttempted?Math.round(sessionCorrect/sessionAttempted*100):0;$('quiz').classList.add('hidden');$('setup').classList.remove('hidden');$('stats').classList.remove('hidden');$('settings').classList.remove('hidden');$('setupStatus').textContent=`本次完成！選擇題答對 ${sessionCorrect} / ${sessionAttempted} 題（${pct}%）。簡答題請自行核對參考答案。`;renderStats();window.scrollTo({top:0,behavior:'smooth'})}
+$('quit').onclick=()=>{if(confirm('要結束本次挑戰嗎？已作答紀錄會保留。'))finishSession()};
+function renderStats(){const d=getData(),h=d.history||[],graded=h.filter(x=>typeof x.correct==='boolean'),correct=graded.filter(x=>x.correct).length;$('sessions').textContent=new Set(h.map(x=>x.date?.slice(0,10))).size;$('attempted').textContent=h.length;$('accuracy').textContent=graded.length?Math.round(correct/graded.length*100)+'%':'—';const hist=$('history');hist.innerHTML='';if(!h.length){hist.textContent='尚無作答紀錄。';return}h.slice(-5).reverse().forEach(x=>{const div=document.createElement('div');div.className='historyitem';div.textContent=`${x.correct===true?'✓':x.correct===false?'✗':'✎'} ${x.topic||'未分類'}｜${x.question}`;hist.appendChild(div)})}
+$('review').onclick=()=>{const d=getData();questions=(d.wrong||[]).slice(-20).reverse();if(!questions.length){alert('目前沒有錯題，繼續挑戰就會累積錯題！');return}index=0;sessionCorrect=0;sessionAttempted=0;reviewMode=true;$('setup').classList.add('hidden');$('stats').classList.add('hidden');$('settings').classList.add('hidden');$('quiz').classList.remove('hidden');renderQuestion()};
+$('clearHistory').onclick=()=>{if(confirm('確定清除所有作答紀錄與錯題嗎？此操作無法復原。')){putData({history:[],wrong:[]})}};
+loadSettings();renderStats();
+if('serviceWorker' in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script>
+</body>
+</html>
