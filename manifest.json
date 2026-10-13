@@ -1,0 +1,10 @@
+{
+  "name": "知識試煉所",
+  "short_name": "知識試煉所",
+  "description": "個人 AI 出題、答題與錯題複習工具",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f4f7fb",
+  "theme_color": "#172554",
+  "lang": "zh-TW"
+}
