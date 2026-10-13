@@ -72,7 +72,7 @@ let questions=[], index=0, answered=false, sessionCorrect=0, sessionAttempted=0,
 const STORE='knowledge_trial_v1';
 function getData(){try{return JSON.parse(localStorage.getItem(STORE)||'{"history":[],"wrong":[]}')}catch(e){return {history:[],wrong:[]}}}
 function putData(d){localStorage.setItem(STORE,JSON.stringify(d));renderStats()}
-function loadSettings(){ $('apiKey').value=localStorage.getItem('kt_api_key')||''; $('model').value=localStorage.getItem('kt_model')||'gemini-2.5-flash'; }
+function loadSettings(){ $('apiKey').value=localStorage.getItem('kt_api_key')||''; $('model').value=localStorage.getItem('kt_model')||'gemini-3.8-flash'; }
 $('saveKey').onclick=()=>{localStorage.setItem('kt_api_key',$('apiKey').value.trim());localStorage.setItem('kt_model',$('model').value.trim()||'gemini-2.5-flash');$('setupStatus').textContent='設定已儲存於本機。';};
 $('toggleKey').onclick=()=>{$('apiKey').type=$('apiKey').type==='password'?'text':'password'};
 function promptText(){const topic=$('topic').value.trim()||$('subject').value;const count=+$('count').value;const type=$('types').value;const src=$('source').value.trim();return `你是一位嚴謹的教學設計者。請用繁體中文出一份測驗，主題：「${topic}」，學習領域：「${$('subject').value}」，難度：「${$('difficulty').value}」，共 ${count} 題。題型要求：${type==='mcq'?'全部為單選題。':type==='written'?'約 80% 單選題，其餘為簡答題。':'約 80% 單選題，其餘可為簡答或填充題。'}禁止是非題。選擇題必須有 4 個選項，且只有一個最佳答案。題目要有明確正解，避免含糊。難度要真正符合設定，不能只靠死背。每題附簡潔但有用的解釋。${src?'優先依據以下資料出題，不要加入資料無法支持的細節；若資料不足，可出合理的概念題。\\n指定資料：\\n'+src:''}\n只回傳合法 JSON，不要 Markdown，格式如下：{"questions":[{"type":"mcq","question":"題目","options":["A...","B...","C...","D..."],"answer":0,"explanation":"解析"},{"type":"short","question":"題目","answerText":"參考答案","explanation":"評分重點與解析"}]}\n單選題 answer 是 0 到 3 的整數。題目總數必須剛好 ${count} 題。`;}
